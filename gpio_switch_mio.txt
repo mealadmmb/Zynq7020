@@ -7,25 +7,19 @@
 #include "xparameters.h"
 
 
-#define sw1 50
+XGpioPs_Config *emio_config;
+XGpioPs emio;
 
 
-XGpioPs_Config *gpio_config;
-XGpioPs gpio;
-
-
-
-void delay(uint64_t dly){
-while(dly--);
-}
 void gpio_init(){
 
-	gpio_config = XGpioPs_LookupConfig(XPAR_PS7_GPIO_0_DEVICE_ID);
-	int status = XGpioPs_CfgInitialize(&gpio, gpio_config, gpio_config -> BaseAddr);
+	emio_config = XGpioPs_LookupConfig(XPAR_PS7_GPIO_0_DEVICE_ID);
+	s32 status = XGpioPs_CfgInitialize(&emio, emio_config, emio_config->BaseAddr);
+
 	if(status == XST_SUCCESS)
-		xil_printf("GPIO INIT SUCCESSFUL\r\n");
+		xil_printf("DEVICE INTI SUCCESSFUL\n");
 	else
-		xil_printf("GPIO INIT FAILED\r\n");
+		xil_printf("DEVICE INIT FAILED\n");
 
 }
 
@@ -34,16 +28,31 @@ int main()
 {
     init_platform();
     gpio_init();
+
+    XGpioPs_SetDirectionPin(&emio, 54, 1);
+    XGpioPs_SetDirectionPin(&emio, 55, 1);
+    XGpioPs_SetDirectionPin(&emio, 56, 1);
+
+    XGpioPs_SetOutputEnablePin(&emio, 54, 1);
+    XGpioPs_SetOutputEnablePin(&emio, 55, 1);
+    XGpioPs_SetOutputEnablePin(&emio, 56, 1);
     xil_printf("Start\r\n");
 
-    XGpioPs_SetDirectionPin(&gpio, sw1, 0);
-    XGpioPs_SetOutputEnablePin(&gpio,sw1,1);
     while(1){
-    	u32 data_status= XGpioPs_ReadPin(&gpio, sw1);
-    	xil_printf("Value read: %0d  \r\n",data_status);
-    	sleep(1);
+
+    	XGpioPs_WritePin(&emio, 54, 0);
+    	XGpioPs_WritePin(&emio, 55, 0);
+    	XGpioPs_WritePin(&emio, 56, 0);
+    	sleep(2);
+    	XGpioPs_WritePin(&emio, 54, 1);
+    	XGpioPs_WritePin(&emio, 55, 1);
+    	XGpioPs_WritePin(&emio, 56, 1);
+    	sleep(2);
+
     }
 
+    print("Hello World\n\r");
+    print("Successfully ran Hello World application");
     cleanup_platform();
     return 0;
 }
